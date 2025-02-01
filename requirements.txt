@@ -1,0 +1,9 @@
+numpy<2.0
+scipy
+matplotlib
+tqdm
+argparse
+torch
+torchvision
+scikit-learn
+pandas
