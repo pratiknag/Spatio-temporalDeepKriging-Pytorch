@@ -14,6 +14,8 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from torch.utils.data import DataLoader, TensorDataset
+import os
+import pandas as pd
 
 
 # Define tilted loss function
@@ -88,23 +90,28 @@ def main():
     # Load your data (example placeholders for phi_reduce_train and y)
     # phi_reduce_train and y should be converted to torch tensors
     df = pd.read_csv("datasets/dataset-10DAvg.csv")
-    y = df["Station_Value"]
+    y = np.array(df["Station_Value"]).reshape(len(df),1)
     del(df)
     phi_reduce = np.load("datasets/phi_float16.npy")
     x_train, x_test, y_train, y_test = train_test_split(phi_reduce, y, test_size=0.1)
-
+    print(x_train.shape)
+    print(x_test.shape)
+    print(y_train.shape)
+    print(y_test.shape)
     # Convert to PyTorch tensors
-    x_train_tensor = torch.tensor(x_train, dtype=torch.float16)
-    x_test_tensor = torch.tensor(x_test, dtype=torch.float16)
+    x_train_tensor = torch.tensor(x_train, dtype=torch.float32)
+    x_test_tensor = torch.tensor(x_test, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
     y_test_tensor = torch.tensor(y_test, dtype=torch.float32)
 
     # Initialize model
     model = DeepKrigingModel(input_dim=x_train.shape[1])
-
+    step_size = 20
+    gamma = 0.1
     # Define optimizer and loss function
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    
     # Create data loaders for training and testing (batching)
     train_dataset = TensorDataset(x_train_tensor, y_train_tensor)
     test_dataset = TensorDataset(x_test_tensor, y_test_tensor)
@@ -118,7 +125,13 @@ def main():
     patience = 30  # Early stopping patience
     best_val_loss = float('inf')
     epochs_without_improvement = 0
+    
 
+    directory = 'models/'
+
+    # Check if directory exists, if not, create it
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     for epoch in range(num_epochs):
         model.train()  # Set model to training mode
         running_loss = 0.0
@@ -132,21 +145,21 @@ def main():
             
             # Compute loss
             loss = tilted_loss1(targets, x1) + tilted_loss2(targets,x2) + tilted_loss3(targets,x3)
-            
+            #print(loss.shape)
             # Backward pass and optimize
-            loss.backward()
+            loss.sum().backward()
             optimizer.step()
             
-            running_loss += loss.item()
-
+            running_loss += loss.sum().item()
+        scheduler.step()
         # Validation phase
         model.eval()  # Set model to evaluation mode
         val_loss = 0.0
         with torch.no_grad():
             for inputs, targets in test_loader:
-                outputs = model(inputs)
-                loss = tilted_loss(targets, outputs)
-                val_loss += loss.item()
+                x1, x2, x3 = model(inputs)
+                loss = tilted_loss1(targets, x1) + tilted_loss2(targets,x2) + tilted_loss3(targets,x3)
+                val_loss += loss.sum().item()
 
         # Print training and validation loss
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader)}, Val Loss: {val_loss/len(test_loader)}")
@@ -162,6 +175,7 @@ def main():
             if epochs_without_improvement >= patience:
                 print(f"Early stopping at epoch {epoch+1}")
                 break
+        
 
     end_time = time.time()
     print(f"Training completed in {end_time - start_time} seconds")
@@ -178,3 +192,5 @@ def main():
     mse = mean_squared_error(y_test, y_pred.numpy())
     print(f"Mean Squared Error: {mse}")
 
+#if __name__ == '__main__':
+ #   main()

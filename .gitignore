@@ -8,6 +8,8 @@
 *.so
 *.pyc
 *.ipynb
+*.npy
+*.out
 
 # Packages #
 ############

@@ -92,6 +92,9 @@ def main():
     # Save the resulting array as a .npy file
     output_file = 'datasets/phi_float16.npy'
     np.save(output_file, phi_reduce)
+
+    output_file = 'datasets/index_zero.npy'
+    np.save(output_file, idx_zero)
     
     print(f"Data has been written to {output_file}")
 
