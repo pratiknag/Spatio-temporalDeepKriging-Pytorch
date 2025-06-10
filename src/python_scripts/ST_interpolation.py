@@ -89,7 +89,7 @@ def main():
 
     # Load your data (example placeholders for phi_reduce_train and y)
     # phi_reduce_train and y should be converted to torch tensors
-    df = pd.read_csv("datasets/dataset-10DAvg.csv")
+    df = pd.read_csv("datasets/dataset-10DAvg-sample.csv")
     y = np.array(df["Station_Value"]).reshape(len(df),1)
     del(df)
     phi_reduce = np.load("datasets/phi_float16.npy")

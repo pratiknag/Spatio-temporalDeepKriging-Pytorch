@@ -13,7 +13,7 @@ import pandas as pd
 import csv
 
 def main():
-    df = pd.read_csv("datasets/dataset-10DAvg.csv")
+    df = pd.read_csv("datasets/dataset-10DAvg-sample.csv")
     print(df.head(3))
     
     s = np.array(df["time_scaled"]).reshape(len(df), 1)
