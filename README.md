@@ -2,6 +2,40 @@
 
 Pytorch implementation of Space-Time DeepKriging. 
 
+---
+
+## 📦 Setup Instructions
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/pratiknag/Spatio-temporalDeepKriging-Pytorch.git
+cd Spatio-temporalDeepKriging-Pytorch
+````
+
+### 2. Create and Activate a Virtual Environment
+
+Ensure `virtualenv` is installed:
+
+```bash
+python3 -m pip install virtualenv
+```
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m virtualenv env
+source env/bin/activate  # For Linux/macOS
+```
+
+### 3. Install Dependencies
+
+Install the required packages using:
+
+```bash
+pip install -r requirements.txt
+```
+
+
 ### 🌐 Applications
 
 Due to size and privacy constraints, full real-world datasets cannot be uploaded to this repository.
